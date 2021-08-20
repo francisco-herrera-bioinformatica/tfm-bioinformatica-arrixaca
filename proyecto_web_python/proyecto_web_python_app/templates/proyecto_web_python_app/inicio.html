@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+{% extends "proyecto_web_python_app/base.html" %}
+{% load static %}
+{% block content %}
+
+<body>
+    <!-- Cabecera -->
+    <header class="py-5 bg-image-full"
+        style="background-image: url('https://static.horiba.com/fileadmin/Horiba/_processed_/2/2/csm_Division_-_Hematology_e622ef522b.jpg')">
+        <div class="text-center my-5">
+            <img class="img-fluid rounded-circle mb-4"
+                src="{% static 'proyecto_web_python_app/assets/icono_inicio.jpg' %}" alt="..." />
+
+            <div class="box info">
+                <h1 class="text-white fs-3 fw-bolder">Trabajo Fin de Máster</h1>
+                <p class="text-white-50 mb-0">Sistema de recogida y procesamiento de datos</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Introducción -->
+    <section class="py-5">
+        <div class="container my-5">
+            <div class="row justify-content-center">
+                <div class="col-lg-6">
+                    <h2>Introducción</h2>
+                    <p class="lead">Este sistema se ha desarrollado a partir de los datos proporcionados por el
+                        Laboratorio de Terapia Celular y Tisular del Servicio de Hematología del Hospital Virgen de la
+                        Arrixaca.</p>
+                    <p class="mb-0">El objetivo es realizar un primer punto de contacto con el problema que actualmente padecen los trabajadores de dicho departamento, proporcionando un <b>estudio exhaustivo</b> y un <b>prototipo</b> que pueda constituir una posible solución al mismo.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Características -->
+    <section class="features-icons bg-white text-center">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="features-icons-item mx-auto mb-5 mb-lg-0 mb-lg-3">
+                        <div class="features-icons-icon d-flex"><i class="bi-cloud-upload-fill m-auto text-primary"></i></div>
+                        <h3>Donaciones</h3>
+                        <p class="lead mb-0">Subir documentos asociados a una donación (nueva o ya existente), haciendo hincapié en los principios de escalabilidad y heterogeneidad propios del entorno de trabajo.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="features-icons-item mx-auto mb-5 mb-lg-0 mb-lg-3">
+                        <div class="features-icons-icon d-flex"><i class="bi-terminal m-auto text-primary"></i></div>
+                        <h3>Consultas</h3>
+                        <p class="lead mb-0">Consultar información almacenada en el sistema de almacenamiento de datos para su extracción o comparación.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="features-icons-item mx-auto mb-0 mb-lg-3">
+                        <div class="features-icons-icon d-flex"><i class="bi-file-bar-graph m-auto text-primary"></i></div>
+                        <h3>Documentos</h3>
+                        <p class="lead mb-0">Visor de documentos almacenados en el gestor documental para comprobar su existencia.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+
+{% endblock %}
+
+</html>

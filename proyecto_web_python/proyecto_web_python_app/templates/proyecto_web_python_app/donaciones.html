@@ -1,0 +1,69 @@
+{% extends "proyecto_web_python_app/inicio.html" %}
+
+{% load static %}
+
+{% block content %}
+
+<div class="container my-5">
+
+    <!-- Selector de nueva donación / donación existente -->
+    <nav>
+        <div class="nav nav-tabs" id="nav-tab" role="tablist">
+            <button class="nav-link active" id="nav-home-tab" data-bs-toggle="tab" data-bs-target="#nav-nueva"
+                type="button" role="tab" aria-controls="nav-home" aria-selected="true">Nueva donación</button>
+            <button class="nav-link" id="nav-profile-tab" data-bs-toggle="tab" data-bs-target="#nav-existente"
+                type="button" role="tab" aria-controls="nav-profile" aria-selected="false">Donación existente</button>
+        </div>
+    </nav>
+    <div class="tab-content" id="nav-tabContent">
+
+        <!-- Nueva donación -->
+        <div class="tab-pane fade show active" id="nav-nueva" role="tabpanel" aria-labelledby="nav-nueva-tab">
+            <div class="container my-5">
+
+                {% if "valido" in request.GET %}
+
+                <div class="alert alert-success" role="alert">
+                    Donación guardada con éxito
+                </div>
+
+                {% endif %}
+
+                <form action="" method="POST" style="text-align: center;" , enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label style="padding-bottom: 30px" for="codigo_donacion"><b>Código de donación</b></label>
+                        <input type="text" class="form-control" id="codigo_donacion" name="codigo_donacion"
+                            placeholder="Introduzca código de donación" required>
+                        <small id="codigo_ayuda" class="form-text text-muted">El código de donación está formado por 13
+                            dígitos: código del centro (5 dígitos), año (2 dígitos) y nº del proceso (6 dígitos).
+                            <br>Ejemplo: <b>E0052 21 100235</b>
+                        </small>
+                    </div>
+                    <div class="form-group">
+                        <label style="padding: 30px" for="tipo_operacion"><b>Tipo de operación</b></label>
+                        <input type="text" class="form-control" id="tipo_operacion" name="tipo_operacion" value="001"
+                            readonly required>
+                        <small id="tipo_ayuda" class="form-text text-muted">El tipo de operación indica si se trata de
+                            una nueva donación o los ficheros a insertar son parte de una donación ya existente.
+                            <b>NO</b>
+                            es modificable.</small>
+                    </div>
+                    <div class="custom-file" style="padding: 50px">
+                        <input type="file" class="custom-file-input" id="documentos" name="documentos" multiple
+                            required>
+
+                    </div>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Donación existente-->
+        <div class="tab-pane fade" id="nav-existente" role="tabpanel" aria-labelledby="nav-existente-tab">
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}
