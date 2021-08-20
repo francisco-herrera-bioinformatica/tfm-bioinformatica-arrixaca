@@ -5,15 +5,15 @@ from django.shortcuts import render, HttpResponse
 # ----------------------------------------
 
 def inicio(request):
-    return HttpResponse("Inicio")
+    return render(request, "proyecto_web_python_app/inicio.html")
 
 def donaciones(request):
-    return HttpResponse("Donaciones")
+    return render(request, "proyecto_web_python_app/donaciones.html")
   
 def consultas(request):
-    return HttpResponse("Consultas")
+    return render(request, "proyecto_web_python_app/consultas.html")
 
 def documentos(request):
-    return HttpResponse("Documentos")
+    return render(request, "proyecto_web_python_app/documentos.html")
 
 
