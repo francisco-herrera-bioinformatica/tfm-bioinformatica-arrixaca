@@ -2,10 +2,10 @@ from django.db import models
 
 # Create your models here.
 class Documento(models.Model):
-    nombre = models.CharField(max_length=256)
+    nombre = models.CharField(max_length=255)
     extension = models.CharField(max_length=20)
     longitud = models.CharField(max_length=50)
-    fichero = models.FileField()
+    fichero = models.FileField(upload_to='documents/')
     creado = models.DateTimeField(auto_now_add=True)
     actualizado = models.DateTimeField(auto_now_add=True)
 
