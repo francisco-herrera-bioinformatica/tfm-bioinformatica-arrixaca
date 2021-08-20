@@ -4,6 +4,13 @@ import logging
 from .utils import client, db
 import pymongo
 from tika import parser
+from .models import Documento
+import os.path
+from django.core.files.storage import default_storage
+from django.template.loader import render_to_string
+import io 
+from wsgiref.util import FileWrapper
+from django.db import models
 
 logging.basicConfig(level=logging.NOTSET)  # Here
 # ----------------------------------------
@@ -24,13 +31,42 @@ def donaciones(request):
         formulario_donacion = FormularioDonacion(request.POST, request.FILES)
 
         if formulario_donacion.is_valid():
+
             codigo_donacion = request.POST.get("codigo_donacion")
             tipo_operacion = request.POST.get("tipo_operacion")
-            documentos = request.FILES
+            documentos = request.FILES.getlist("documentos")
 
-            for documento in documentos:
-                raw = parser.from_file(documento)
-                print(raw['content'])
+            logging.info(documentos)
+
+            for value in documentos:
+
+                logging.info(type(value.file))
+
+                logging.info(value.file)
+
+                fichero = models.FileField(io.BytesIO(value.file.getvalue()))
+
+                logging.info(type(fichero))
+                
+                d = Documento(nombre = value.name, longitud = value.size, extension = os.path.splitext(value.name)[1], fichero = fichero)
+                d.save()
+
+                pdfBytes = value.file.getvalue()
+                pdfFile = io.BytesIO(pdfBytes)
+
+                logging.info(type(pdfFile))
+
+                
+
+                coleccion = db["documentos"]
+                x = coleccion.insert_one({"nombre": d.nombre, "extension": d.extension, "longitud": d.longitud})
+
+                #response = HttpResponse(FileWrapper(pdfFile), content_type='application/pdf')
+                #return response
+
+
+
+
 
         return redirect("/donaciones?valido")
 
