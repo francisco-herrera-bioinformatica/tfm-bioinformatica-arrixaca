@@ -21,4 +21,5 @@ from proyecto_web_python_app import views # Importar las views desde el director
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('proyecto_web_python_app.urls')),
+    path('accounts/', include('django.contrib.auth.urls')),
 ]
