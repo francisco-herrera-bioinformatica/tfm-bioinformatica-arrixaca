@@ -4,4 +4,134 @@
 
 {% block content %}
 
+<style>
+    #buscador {
+        background-position: 10px 10px;
+        background-repeat: no-repeat;
+        width: 100%;
+        font-size: 16px;
+        padding: 12px 20px 12px 40px;
+        border: 1px solid #ddd;
+        margin-bottom: 12px;
+    }
+
+    #tablaDocumentos {
+        border-collapse: collapse;
+        width: 100%;
+        border: 1px solid #ddd;
+        font-size: 18px;
+    }
+
+    #tablaDocumentos th,
+    #tablaDocumentos td {
+        text-align: left;
+        padding: 12px;
+    }
+
+    #tablaDocumentos tr {
+        border-bottom: 1px solid #ddd;
+    }
+
+    #tablaDocumentos tr.header,
+    #tablaDocumentos tr:hover {
+        background-color: #f1f1f1;
+    }
+</style>
+
+
+
+<div class="container my-5">
+
+    <h2 style="padding: 10px">Documentos</h2>
+
+    <input type="text" id="buscador" onkeyup="myFunction()" placeholder="Buscar documentos" title="Buscar documentos">
+
+    <table id="tablaDocumentos" class="table table-bordered table-hover" cellspacing="0" width="100%">
+        <thead>
+            <tr class="header">
+                <th style="text-align: center" scope="col"></th>
+                <th style="text-align: center" scope="col">Documento</th>
+                <th style="text-align: center" scope="col">Tamaño</th>
+                <th style="text-align: center" scope="col">Fecha de subida</th>
+                <th style="text-align: center" scope="col"></th>
+                <th style="text-align: center" scope="col"></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for documento in documentos %}
+
+            <tr>
+                <td style="text-align: center;">
+                    <i class="fa fa-database" style="padding-right: 5px"></i>
+                    {% if documento.id_google %}
+                    <i class="fa fa-cloud"></i>
+                    {% endif %}
+                </td>
+                <td>{{documento.nombre}}</th>
+                <td>{{documento.longitud}} kb</td>
+                <td>{{documento.fecha_subida}}</td>
+                <td style="text-align: center">
+                    {% if documento.ruta_gestor and documento.extension == ".pdf" %}
+                    <form method="POST"> {% csrf_token %}
+                        <button class="btn btn-secondary" type="submit" name="{{documento.ruta_gestor}}"><i class="fa fa-database"></i> BBDD</button>
+                    </form>
+                    {% endif %}
+                </td>
+                <td style="text-align: center">
+                    {% if documento.enlace_google %}
+                    <a href="{{documento.enlace_google}}" target="_blank" class="btn btn-primary"><i
+                            class="fa fa-cloud"></i> Nube</a>
+                    {% endif %}
+                </td>
+            </tr>
+
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+    function myFunction() {
+        var input, filter, table, tr, td, i, txtValue;
+        input = document.getElementById("buscador");
+        filter = input.value.toUpperCase();
+        table = document.getElementById("tablaDocumentos");
+        tr = table.getElementsByTagName("tr");
+        for (i = 0; i < tr.length; i++) {
+            td = tr[i].getElementsByTagName("td")[1];
+            if (td) {
+                txtValue = td.textContent || td.innerText;
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    tr[i].style.display = "";
+                } else {
+                    tr[i].style.display = "none";
+                }
+            }
+        }
+    }
+    $(document).ready(function () {
+        $('#tablaDocumentos').DataTable({
+            "language": {
+                "emptyTable": "No hay datos disponibles",
+                "info": "Mostrando _START_ - _END_ de _TOTAL_ resultados",
+                "infoEmpty": "Mostrando 0 - 0  de 0 resultados",
+                "infoFiltered": "(filtrados de _MAX_ resultados totales)",
+                "lengthMenu": "Mostrar _MENU_ resultados",
+                "loadingRecords": "Cargando resultados...",
+                "processing": "Procesando resultados...",
+                "search": "Buscar documentos",
+                "zeroRecords": "No hay resultados que coincidan con el criterio de búsqueda",
+                "paginate": {
+                    "first": "Primera",
+                    "last": "Última",
+                    "next": "Siguiente",
+                    "previous": "Anterior"
+                },
+            },
+            searching: false,
+            bPaginate: false
+        })
+    });
+</script>
+
 {% endblock %}
