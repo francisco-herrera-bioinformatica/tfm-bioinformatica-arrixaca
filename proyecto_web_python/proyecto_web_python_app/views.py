@@ -1,81 +1,96 @@
-from django.shortcuts import render, HttpResponse, redirect
-from .forms import FormularioDonacion
-import logging
-from .utils import client, db
-import pymongo
-from tika import parser
+from django.shortcuts import render, redirect
+from .utils import db
 from .models import Documento
 import os.path
 from django.core.files.storage import default_storage
 from django.template.loader import render_to_string
-import io 
-from wsgiref.util import FileWrapper
-from django.db import models
+from django.core.files.storage import FileSystemStorage
+from pydrive.auth import GoogleAuth
+from pydrive.drive import GoogleDrive
+import re
+import datetime
+from django.contrib.auth.decorators import login_required
 
-logging.basicConfig(level=logging.NOTSET)  # Here
 # ----------------------------------------
 # Definición de vistas
 # ----------------------------------------
 
-
+# Vista asociada a la pantalla de inicio
 def inicio(request):
     return render(request, "proyecto_web_python_app/inicio.html")
 
-
+# ----------------------------------------
+# Vista asociada a la pantalla de donaciones
 def donaciones(request):
+    
+    # Obtener la autenticación del usuario
+    gauth = GoogleAuth()
+    gauth.LoadCredentialsFile("credenciales.txt")
+    drive = GoogleDrive(gauth)
 
-    formulario_donacion = FormularioDonacion()
+    # Obtener los códigos de donación
+    coleccion = db['donaciones']
+    codigos_db = coleccion.find({}, {"_id": 0, "codigo_donacion": 1})
+    codigos = []
+    for codigo in codigos_db:
+        codigos.append(codigo.get("codigo_donacion"))
 
+    # Si la petición es POST, guardar la información
     if request.method == "POST":
 
-        formulario_donacion = FormularioDonacion(request.POST, request.FILES)
+        # Modelo con los campos del formulario
+        codigo_donacion = request.POST.get("codigo_donacion")
+        tipo_trasplante = request.POST.get("tipo_trasplante")
+        tipo_operacion = request.POST.get("tipo_operacion")
+        documentos = request.FILES.getlist("documentos")
 
-        if formulario_donacion.is_valid():
+        # Recorrer los documentos para su guardado
+        for documento in documentos:
 
-            codigo_donacion = request.POST.get("codigo_donacion")
-            tipo_operacion = request.POST.get("tipo_operacion")
-            documentos = request.FILES.getlist("documentos")
+            # Almacenar localmente en disco duro para redundancia
+            fs = FileSystemStorage()
+            extension = os.path.splitext(documento.name)[1]
+            nombre = os.path.splitext(documento.name)[0]
+            nombre_formateado = re.sub('[^A-Za-z0-9]+', '', nombre)
 
-            logging.info(documentos)
+            nombre_fichero = codigo_donacion + "-" + nombre_formateado + extension # Ejemplo: E005221100235-EstudiopreAloTPH509407.pdf
+            filename = fs.save(tipo_trasplante + "/" + codigo_donacion + "/" + nombre_fichero, documento)
+            uploaded_file_url = fs.url(filename)
 
-            for value in documentos:
+            # Almacenar remotamente en Google Drive
+            carpeta = drive.ListFile({'q': "title = 'TFM_Documentos' and trashed = false"}).GetList()[0]
+            copia = drive.CreateFile({'title': nombre_fichero, 'parents': [{'id': carpeta['id']}]})
+            copia.SetContentFile(uploaded_file_url[1:])
+            copia.Upload()
 
-                logging.info(type(value.file))
+            # Guardar metadatos en MongoDB
+            modelo = Documento(nombre = nombre_fichero, extension = extension, longitud = documento.size)
+            coleccion = db['documentos']
+            x = coleccion.insert_one({"nombre": modelo.nombre, "extension": modelo.extension, "longitud": modelo.longitud, "fecha_subida": datetime.datetime.now().strftime('%d/%m/%Y')})        
 
-                logging.info(value.file)
+        # Si es nueva donación, guardar sus metadatos en MongoDB
+        if tipo_operacion == "001":
+            coleccion = db['donaciones']
+            x = coleccion.insert_one({"codigo_donacion": codigo_donacion, "tipo_trasplante": tipo_trasplante, "documentos_asociados": len(documentos), "fecha_actualizacion": datetime.datetime.now().strftime('%d/%m/%Y')})
 
-                fichero = models.FileField(io.BytesIO(value.file.getvalue()))
-
-                logging.info(type(fichero))
-                
-                d = Documento(nombre = value.name, longitud = value.size, extension = os.path.splitext(value.name)[1], fichero = fichero)
-                d.save()
-
-                pdfBytes = value.file.getvalue()
-                pdfFile = io.BytesIO(pdfBytes)
-
-                logging.info(type(pdfFile))
-
-                
-
-                coleccion = db["documentos"]
-                x = coleccion.insert_one({"nombre": d.nombre, "extension": d.extension, "longitud": d.longitud})
-
-                #response = HttpResponse(FileWrapper(pdfFile), content_type='application/pdf')
-                #return response
-
-
-
-
+        # Si es donación ya existente, actualizar sus metadatos en MongoDB
+        if tipo_operacion == "002":
+            coleccion = db['donaciones']
+            consulta = {"codigo_donacion": codigo_donacion}
+            x = coleccion.find_one(consulta)
+            nuevos_valores = {"$set": {"documentos_asociados": x.get("documentos_asociados") + len(documentos), "fecha_actualizacion": datetime.datetime.now().strftime('%d/%m/%Y')}}
+            x = coleccion.update_one(consulta, nuevos_valores)
 
         return redirect("/donaciones?valido")
 
-    return render(request, "proyecto_web_python_app/donaciones.html")
+    return render(request, "proyecto_web_python_app/donaciones.html", {"codigos": codigos})
 
-
+# ----------------------------------------
+# Vista asociada a la pantalla de consultas
 def consultas(request):
     return render(request, "proyecto_web_python_app/consultas.html")
 
-
+# ----------------------------------------
+# Vista asociada a la pantalla de documentos
 def documentos(request):
     return render(request, "proyecto_web_python_app/documentos.html")
