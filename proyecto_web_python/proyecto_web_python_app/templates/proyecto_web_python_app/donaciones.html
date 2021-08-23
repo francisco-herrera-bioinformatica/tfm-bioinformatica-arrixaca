@@ -61,7 +61,8 @@
                         <input type="file" class="custom-file-input" id="documentos" name="documentos" multiple
                             required>
                     </div>
-                    <button type="submit" class="btn btn-primary">Guardar</button>
+                    <div style="padding:bottom: 10px" class="alert alert-warning" role="alert" id="file-list"><strong>Lista de ficheros</strong></div>
+                    <button type="submit" class="btn btn-danger">Guardar</button>
                 </form>
             </div>
         </div>
@@ -113,12 +114,52 @@
                         <input type="file" class="custom-file-input" id="documentos" name="documentos" multiple
                             required>
                     </div>
-                    <button type="submit" class="btn btn-primary">Guardar</button>
-                </form>
-
+                    <div style="padding:bottom: 10px" class="alert alert-warning" role="alert" id="file-list"><strong>Lista de ficheros</strong></div>
+                    <button type="submit" class="btn btn-danger">Guardar</button>
+                </form>         
             </div>
         </div>
     </div>
 </div>
 
+<script>
+    (function () {
+        var filesUpload = document.getElementById("documentos"),z
+        fileList = document.getElementById("file-list");
+
+// Función encargada de añadir un nuevo fichero a la lista
+function uploadFile (file) {
+    var li = document.createElement("li"),
+        div = document.createElement("div"),            
+        reader,
+        xhr,
+        fileInfo;
+    li.appendChild(div);
+    fileInfo = "<div class=\"neutral\">Documento: <strong>" + file.name + "</strong> con tamaño <strong>" + parseInt(file.size / 1024, 10) + "</strong> kb.</div>";
+    div.innerHTML = fileInfo;
+    fileList.appendChild(div);
+}
+
+// Función encargada de recorrer la lista de ficheros
+function traverseFiles (files) {
+    if (typeof files !== "undefined") {
+        for (var i=0, l=files.length; i<l; i++) {
+            uploadFile(files[i]);
+        }
+    }
+    else {
+        fileList.innerHTML = "<div class=\"neutral\">Your browser does not support Multiple File Upload, but you can still upload your file. We recommend you to upload to a more modern browser, like <a href=\"http://google.com/chrome\" target=\"_blank\">Google Chrome</a> for example.<div>";
+    }   
+}
+
+filesUpload.addEventListener("change", function () {
+    document.getElementById('file-list').innerHTML = "<strong>Lista de ficheros</strong>";
+    traverseFiles(this.files);
+}, false);
+
+
+     })();
+</script>
+
 {% endblock %}
+
