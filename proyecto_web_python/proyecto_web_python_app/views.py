@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect
+import numpy
 from .utils import db
 from .models import Documento
 import os
@@ -11,6 +12,7 @@ import re
 import datetime
 from django.http import FileResponse
 import tabula
+import pandas as pd
 
 # ----------------------------------------
 # Definición de vistas
@@ -58,8 +60,6 @@ def donaciones(request):
             filename = fs.save(tipo_trasplante + "/" + codigo_donacion + "/" + nombre_fichero, documento)
             uploaded_file_url = fs.url(filename)
 
-            print(filename)
-
             # Almacenar remotamente en Google Drive
             carpeta = drive.ListFile({'q': "title = 'TFM_Documentos' and trashed = false"}).GetList()[0]
             copia = drive.CreateFile({'title': nombre_fichero, 'parents': [{'id': carpeta['id']}]})
@@ -74,7 +74,17 @@ def donaciones(request):
             # Guardar metadatos en MongoDB
             modelo = Documento(nombre = nombre_fichero, extension = extension, longitud = documento.size)
             coleccion = db['documentos']
-            x = coleccion.insert_one({"nombre": modelo.nombre, "extension": modelo.extension, "longitud": modelo.longitud, "fecha_subida": datetime.datetime.now().strftime('%d/%m/%Y'), "id_google": copia.get('id'), "enlace_google": copia['alternateLink'], "ruta_gestor": "../gestor_documentos_local/" + filename})        
+            x = coleccion.insert_one({"codigo_donacion": codigo_donacion, "nombre": modelo.nombre, "extension": modelo.extension, "longitud": modelo.longitud, "fecha_subida": datetime.datetime.now().strftime('%d/%m/%Y'), "id_google": copia.get('id'), "enlace_google": copia['alternateLink'], "ruta_gestor": "../gestor_documentos_local/" + filename})        
+
+            if modelo.extension == ".pdf":
+                coleccion = db['datamining']
+                lista = tabula.read_pdf("../gestor_documentos_local/" + filename, pages='all')
+                
+                for df in lista:
+                    for row in df.iterrows():
+                        array = row[1].array
+                        array = array[~pd.isnull(array)]
+                        coleccion.insert_one({"codigo_donacion": codigo_donacion, "documento_asociado": x.inserted_id, "datos_obtenidos": str(array)})
 
         # Si es nueva donación, guardar sus metadatos en MongoDB
         if tipo_operacion == "001":
@@ -110,13 +120,22 @@ def documentos(request):
     coleccion = db['documentos']
     documentos = coleccion.find()
 
+    diccionario = {}
+
+    lista = tabula.read_pdf("../gestor_documentos_local/trasplantes_alogenicos/E005221100235/E005221100235-1ContajeControlPreAferesisSP_uvqPbvd.pdf", pages='1')
+    i = 1
+    for df in lista:
+        for row in df.iterrows():
+            array = row[1].array
+            array = array[~pd.isnull(array)]
+
+    coleccion = db['datamining']
+
     # Descarga del documento desde el gestor de documentos local
     if request.method == "POST":
 
         dict = request.POST
         ruta_gestor = list(dict.keys())[-1]
-
-        
 
         extension = os.path.splitext(ruta_gestor)[1]
 
