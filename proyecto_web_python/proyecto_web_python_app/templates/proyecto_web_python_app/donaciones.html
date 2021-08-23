@@ -34,11 +34,19 @@
                     <div class="form-group">
                         <label style="padding-bottom: 30px" for="codigo_donacion"><b>Código de donación</b></label>
                         <input type="text" style="text-align:center" class="form-control" id="codigo_donacion"
-                            name="codigo_donacion" placeholder="Introduzca código de donación" required>
+                            name="codigo_donacion" placeholder="Introduzca código de donación" maxlength="13" pattern="[A-Za-z0-9]{13}" required>
                         <small id="codigo_ayuda" class="form-text text-muted">El código de donación está formado por 13
                             dígitos: código del centro (5 dígitos), año (2 dígitos) y nº del proceso (6 dígitos).
                             <br>Ejemplo: <b>E0052 21 100235</b>
                         </small>
+                    </div>
+                    <div class="form-group">
+                        <label style="padding: 30px" for="tipo_donacion"><b>Tipo de trasplante</b></label>
+                        <select style="text-align-last:center" class="form-select" name="tipo_trasplante" required>
+                            <option value="trasplantes_alogenicos">Trasplante alogénico</option>
+                            <option value="trasplantes_autologos">Trasplante autólogo</option>
+                        </select>
+                        <small id="trasplante_ayuda" class="form-text text-muted">El tipo de trasplante puede ser <b>alogénico</b> (las células madre proceden de una persona distinta del paciente) o <b>autólogo</b> (provienen de la misma persona que recibirá el trasplante)</small>
                     </div>
                     <div class="form-group">
                         <label style="padding: 30px" for="tipo_operacion"><b>Tipo de operación</b></label>
@@ -60,7 +68,55 @@
 
         <!-- Donación existente-->
         <div class="tab-pane fade" id="nav-existente" role="tabpanel" aria-labelledby="nav-existente-tab">
+            <div class="container my-5">
 
+                {% if "valido" in request.GET %}
+
+                <div class="alert alert-success" role="alert">
+                    Donación guardada con éxito
+                </div>
+
+                {% endif %}
+
+                <form action="" method="POST" style="text-align: center;" , enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label style="padding-bottom: 30px" for="codigo_donacion"><b>Código de donación</b></label>
+                        <select style="text-align-last:center" class="form-select" name="codigo_donacion" required>
+                            {% for codigo in codigos %}
+                                <option value="{{codigo}}">{{codigo}}</option>
+                            {% endfor %}
+                        </select>
+                        <small id="codigo_ayuda" class="form-text text-muted">El código de donación está formado por 13
+                            dígitos: código del centro (5 dígitos), año (2 dígitos) y nº del proceso (6 dígitos).
+                            <br>Ejemplo: <b>E0052 21 100235</b>
+                        </small>
+                    </div>
+                    <div class="form-group">
+                        <label style="padding: 30px" for="tipo_donacion"><b>Tipo de trasplante</b></label>
+                        <select style="text-align-last:center" class="form-select" name="tipo_trasplante" required>
+                            <option value="trasplantes_alogenicos">Trasplante alogénico</option>
+                            <option value="trasplantes_autologos">Trasplante autólogo</option>
+                        </select>
+                        <small id="trasplante_ayuda" class="form-text text-muted">El tipo de trasplante puede ser <b>alogénico</b> (las células madre proceden de una persona distinta del paciente) o <b>autólogo</b> (provienen de la misma persona que recibirá el trasplante)</small>
+                    </div>
+                    <div class="form-group">
+                        <label style="padding: 30px" for="tipo_operacion"><b>Tipo de operación</b></label>
+                        <input type="text" style="text-align:center" class="form-control" id="tipo_operacion"
+                            name="tipo_operacion" value="002" readonly required>
+                        <small id="tipo_ayuda" class="form-text text-muted">El tipo de operación indica si se trata de
+                            una nueva donación o los ficheros a insertar son parte de una donación ya existente.
+                            <b>NO</b>
+                            es modificable.</small>
+                    </div>
+                    <div class="custom-file" style="padding: 50px">
+                        <input type="file" class="custom-file-input" id="documentos" name="documentos" multiple
+                            required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </form>
+
+            </div>
         </div>
     </div>
 </div>
