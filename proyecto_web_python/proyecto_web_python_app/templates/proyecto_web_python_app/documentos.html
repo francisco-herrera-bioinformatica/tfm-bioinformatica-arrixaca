@@ -71,7 +71,7 @@
                 <td>{{documento.longitud}} kb</td>
                 <td>{{documento.fecha_subida}}</td>
                 <td style="text-align: center">
-                    {% if documento.ruta_gestor %}
+                    {% if documento.ruta_gestor and documento.extension == ".pdf" %}
                     <form method="POST"> {% csrf_token %}
                         <button class="btn btn-secondary" type="submit" name="{{documento.ruta_gestor}}"><i class="fa fa-database"></i> BBDD</button>
                     </form>

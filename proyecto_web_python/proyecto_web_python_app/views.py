@@ -128,9 +128,6 @@ def documentos(request):
 
         #documento = drive.CreateFile({'id': clave})
         #documento.GetContentFile(documento['title'])
-        
-
-        #return FileResponse(open(documento, 'rb'), content_type='application/pdf')
 
         #df = tabula.read_pdf(documento['title'], pages='all')
 
