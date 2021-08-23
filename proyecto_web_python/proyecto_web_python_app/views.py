@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from .utils import db
 from .models import Documento
-import os.path
+import os
 from django.core.files.storage import default_storage
 from django.template.loader import render_to_string
 from django.core.files.storage import FileSystemStorage
@@ -9,7 +9,8 @@ from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
 import re
 import datetime
-from django.contrib.auth.decorators import login_required
+from django.http import FileResponse
+import tabula
 
 # ----------------------------------------
 # Definición de vistas
@@ -57,16 +58,23 @@ def donaciones(request):
             filename = fs.save(tipo_trasplante + "/" + codigo_donacion + "/" + nombre_fichero, documento)
             uploaded_file_url = fs.url(filename)
 
+            print(filename)
+
             # Almacenar remotamente en Google Drive
             carpeta = drive.ListFile({'q': "title = 'TFM_Documentos' and trashed = false"}).GetList()[0]
             copia = drive.CreateFile({'title': nombre_fichero, 'parents': [{'id': carpeta['id']}]})
             copia.SetContentFile(uploaded_file_url[1:])
             copia.Upload()
+            copia.InsertPermission({
+                'type': 'anyone',
+                'value': 'anyone',
+                'role': 'reader'
+            })
 
             # Guardar metadatos en MongoDB
             modelo = Documento(nombre = nombre_fichero, extension = extension, longitud = documento.size)
             coleccion = db['documentos']
-            x = coleccion.insert_one({"nombre": modelo.nombre, "extension": modelo.extension, "longitud": modelo.longitud, "fecha_subida": datetime.datetime.now().strftime('%d/%m/%Y')})        
+            x = coleccion.insert_one({"nombre": modelo.nombre, "extension": modelo.extension, "longitud": modelo.longitud, "fecha_subida": datetime.datetime.now().strftime('%d/%m/%Y'), "id_google": copia.get('id'), "enlace_google": copia['alternateLink'], "ruta_gestor": "../gestor_documentos_local/" + filename})        
 
         # Si es nueva donación, guardar sus metadatos en MongoDB
         if tipo_operacion == "001":
@@ -93,4 +101,38 @@ def consultas(request):
 # ----------------------------------------
 # Vista asociada a la pantalla de documentos
 def documentos(request):
-    return render(request, "proyecto_web_python_app/documentos.html")
+
+    # Obtener la autenticación del usuario
+    gauth = GoogleAuth()
+    gauth.LoadCredentialsFile("credenciales.txt")
+    drive = GoogleDrive(gauth)
+
+    coleccion = db['documentos']
+    documentos = coleccion.find()
+
+    # Descarga del documento desde el gestor de documentos local
+    if request.method == "POST":
+
+        dict = request.POST
+        ruta_gestor = list(dict.keys())[-1]
+
+        
+
+        extension = os.path.splitext(ruta_gestor)[1]
+
+        if extension == ".pdf":
+            return FileResponse(open(ruta_gestor, 'rb'), content_type='application/pdf')
+
+        if extension == ".doc":
+            return FileResponse(open(ruta_gestor, 'rb'), content_type='application/ms-word')
+
+        #documento = drive.CreateFile({'id': clave})
+        #documento.GetContentFile(documento['title'])
+        
+
+        #return FileResponse(open(documento, 'rb'), content_type='application/pdf')
+
+        #df = tabula.read_pdf(documento['title'], pages='all')
+
+
+    return render(request, "proyecto_web_python_app/documentos.html", {"documentos": documentos})
