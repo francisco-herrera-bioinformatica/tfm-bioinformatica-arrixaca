@@ -4,4 +4,129 @@
 
 {% block content %}
 
+<style>
+    .labels tr td {
+        font-weight: bold;
+    }
+
+    .label tr td label {
+        display: block;
+    }
+
+
+    [data-toggle="toggle"] {
+        display: none;
+    }
+</style>
+
+<div class="container my-5">
+
+    <h2 style="padding: 10px">Consultas</h2>
+
+    <form action="" method="POST" style="text-align: center;" , enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-group" style="padding-bottom: 10px">
+            <input type="text" style="text-align:center" class="form-control" id="codigo_donacion"
+                name="codigo_donacion" placeholder="Introduzca código de donación" maxlength="13"
+                pattern="[A-Za-z0-9]{13}" required>
+            <small id="codigo_ayuda" class="form-text text-muted">El código de donación está formado por 13
+                dígitos: código del centro (5 dígitos), año (2 dígitos) y nº del proceso (6 dígitos).
+                <br>Ejemplo: <b>E0052 21 100235</b>
+            </small>
+        </div>
+        <button type="submit" class="btn btn-danger">Consultar donación</button>
+    </form>
+</div>
+<div class="container my-5">
+    <input type="text" id="buscador" onkeyup="myFunction()" placeholder="Filtrar resultados" title="Filtrar resultados">
+
+    <table id="tablaConsultas" class="table table-bordered table-hover" cellspacing="0" width="100%">
+        <thead>
+            <tr class="header">
+                <th style="text-align: center" scope="col">Resultados</th>
+                <th style="text-align: center" scope="col">Origen</th>
+            </tr>
+        </thead>
+        <tbody>
+
+            {% for documento in documentos %}
+
+            <div class="labels">
+                <tr class="cabecera">
+                    <td class="bg-warning" colspan="2">
+                        <label for={{documento.nombre}}><i class="fa fa-angle-double-down"></i>
+                            {{documento.nombre}}</label>
+                        <input type="checkbox" name={{documento.nombre}} id={{documento.nombre}} data-toggle="toggle">
+                    </td>
+                </tr>
+            </div>
+            <div class="hide">
+
+                {% for dato in documento.datos %}
+
+                <tr class="cuerpo" style="display:none">
+                    <td>{{dato.datos_obtenidos}}</td>
+                    <td>{{documento.nombre}}</td>
+                </tr>
+                {% endfor %}
+
+            </div>
+
+
+            {% endfor %}
+
+        </tbody>
+    </table>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $('[data-toggle="toggle"]').change(function () {
+            $(this).parents().nextUntil('tr.cabecera', 'tr').slideToggle();
+        });
+
+        $('#tablaConsultas').DataTable({
+            "language": {
+                "emptyTable": "No hay datos disponibles",
+                "info": "Mostrando _START_ - _END_ de _TOTAL_ resultados",
+                "infoEmpty": "Mostrando 0 - 0  de 0 resultados",
+                "infoFiltered": "(filtrados de _MAX_ resultados totales)",
+                "lengthMenu": "Mostrar _MENU_ resultados",
+                "loadingRecords": "Cargando resultados...",
+                "processing": "Procesando resultados...",
+                "search": "Buscar documentos",
+                "zeroRecords": "No hay resultados que coincidan con el criterio de búsqueda",
+                "paginate": {
+                    "first": "Primera",
+                    "last": "Última",
+                    "next": "Siguiente",
+                    "previous": "Anterior"
+                },
+            },
+            bPaginate: false,
+            ordering: false,
+            searching: false
+        })
+    });
+
+    function myFunction() {
+        var input, filter, table, tr, td, i, txtValue;
+        input = document.getElementById("buscador");
+        filter = input.value.toUpperCase();
+        table = document.getElementById("tablaConsultas");
+        tr = table.getElementsByClassName("cuerpo");
+        for (i = 0; i < tr.length; i++) {
+            td = tr[i].getElementsByTagName("td")[0];
+            if (td) {
+                txtValue = td.textContent || td.innerText;
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    tr[i].style.display = "";
+                } else {
+                    tr[i].style.display = "none";
+                }
+            }
+        }
+    }
+</script>
+
 {% endblock %}

@@ -84,7 +84,10 @@ def donaciones(request):
                     for row in df.iterrows():
                         array = row[1].array
                         array = array[~pd.isnull(array)]
-                        coleccion.insert_one({"codigo_donacion": codigo_donacion, "documento_asociado": x.inserted_id, "datos_obtenidos": str(array)})
+                        cadena = str(array)
+                        cadena = cadena[cadena.find('[')+1:cadena.find(']')]
+                        if cadena != "en blanco" and any(char.isdigit() for char in cadena):
+                            coleccion.insert_one({"codigo_donacion": codigo_donacion, "documento_asociado": x.inserted_id, "datos_obtenidos": cadena})
 
         # Si es nueva donación, guardar sus metadatos en MongoDB
         if tipo_operacion == "001":
@@ -106,6 +109,25 @@ def donaciones(request):
 # ----------------------------------------
 # Vista asociada a la pantalla de consultas
 def consultas(request):
+
+    if request.method == "POST":
+
+        # Obtener los documentos asociados a la donación
+        coleccion = db['documentos']
+        consulta = {"codigo_donacion": request.POST.get("codigo_donacion")}
+        print(consulta)
+        documentos = coleccion.find(consulta)
+
+        # Obtener los datos de los documentos
+        coleccion = db['datamining']
+        lista_documentos = []
+        for documento in documentos:
+            consulta = {"documento_asociado": documento.get("_id")}
+            documento["datos"] = coleccion.find(consulta)
+            lista_documentos.append(documento)
+
+        return render(request, "proyecto_web_python_app/consultas.html", {"documentos": lista_documentos})
+
     return render(request, "proyecto_web_python_app/consultas.html")
 
 # ----------------------------------------
@@ -115,21 +137,9 @@ def documentos(request):
     # Obtener la autenticación del usuario
     gauth = GoogleAuth()
     gauth.LoadCredentialsFile("credenciales.txt")
-    drive = GoogleDrive(gauth)
 
     coleccion = db['documentos']
     documentos = coleccion.find()
-
-    diccionario = {}
-
-    lista = tabula.read_pdf("../gestor_documentos_local/trasplantes_alogenicos/E005221100235/E005221100235-1ContajeControlPreAferesisSP_uvqPbvd.pdf", pages='1')
-    i = 1
-    for df in lista:
-        for row in df.iterrows():
-            array = row[1].array
-            array = array[~pd.isnull(array)]
-
-    coleccion = db['datamining']
 
     # Descarga del documento desde el gestor de documentos local
     if request.method == "POST":
@@ -144,11 +154,5 @@ def documentos(request):
 
         if extension == ".doc":
             return FileResponse(open(ruta_gestor, 'rb'), content_type='application/ms-word')
-
-        #documento = drive.CreateFile({'id': clave})
-        #documento.GetContentFile(documento['title'])
-
-        #df = tabula.read_pdf(documento['title'], pages='all')
-
 
     return render(request, "proyecto_web_python_app/documentos.html", {"documentos": documentos})
