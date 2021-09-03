@@ -16,9 +16,18 @@
     <link rel="icon" type="image/x-icon" href="{% static 'proyecto_web_python_app/assets/favicon.ico' %}" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css" rel="stylesheet"
         type="text/css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
     <!-- Estilo CSS -->
     <link href="{% static 'proyecto_web_python_app/css/styles.css' %}" rel="stylesheet" />
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.25/js/dataTables.bootstrap4.min.js"></script>
+    <link href="//cdn.datatables.net/1.10.15/css/jquery.dataTables.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="//cdn.datatables.net/1.10.15/js/jquery.dataTables.min.js"></script>
 
     <style>
         .box {
@@ -49,6 +58,55 @@
         .features-icons .features-icons-item .features-icons-icon i {
             font-size: 4.5rem;
         }
+
+        #buscador {
+            background-position: 10px 10px;
+            background-repeat: no-repeat;
+            width: 100%;
+            font-size: 16px;
+            padding: 12px 20px 12px 40px;
+            border: 1px solid #ddd;
+            margin-bottom: 12px;
+        }
+
+        #tablaDocumentos {
+            border-collapse: collapse;
+            width: 100%;
+            border: 1px solid #ddd;
+            font-size: 18px;
+        }
+
+        #tablaDocumentos th,
+        #tablaDocumentos td {
+            text-align: left;
+            padding: 12px;
+        }
+
+        #tablaDocumentos tr {
+            border-bottom: 1px solid #ddd;
+        }
+
+        #tablaDocumentos tr.header,
+        #tablaDocumentos tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        #tablaConsultas {
+            border-collapse: collapse;
+            width: 100%;
+            border: 1px solid #ddd;
+            font-size: 18px;
+        }
+
+        #tablaConsultas th,
+        #tablaConsultas td {
+            text-align: left;
+            padding: 12px;
+        }
+
+        #tablaConsultas tr {
+            border-bottom: 1px solid #ddd;
+        }
     </style>
 
 </head>
@@ -59,18 +117,23 @@
         <div class="container">
             <img style="width: 50px; height: 50px"
                 src="{% static 'proyecto_web_python_app/assets/favicon.ico' %}"></img>
-            <a class="navbar-brand" style="padding-left: 10px;" href="{% url 'Inicio' %}">Máster Oficial en Bioinformática ~ Servicio de
+            <a class="navbar-brand" style="padding-left: 10px;" href="{% url 'Inicio' %}">Máster Oficial en
+                Bioinformática ~ Servicio de
                 Hematología Hospital Virgen de la Arrixaca</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                 data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
                 aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                    <li class="nav-item"><a class="nav-link {% if request.path == '/' %} active{% endif %}" aria-current="page" href="{% url 'Inicio' %}">Inicio</a>
+                    <li class="nav-item"><a class="nav-link {% if request.path == '/' %} active{% endif %}"
+                            aria-current="page" href="{% url 'Inicio' %}">Inicio</a>
                     </li>
-                    <li class="nav-item"><a class="nav-link {% if request.path == '/donaciones' %} active{% endif %}" href="{% url 'Donaciones' %}">Donaciones</a></li>
-                    <li class="nav-item"><a class="nav-link {% if request.path == '/consultas' %} active{% endif %}" href="{% url 'Consultas' %}">Consultas</a></li>
-                    <li class="nav-item"><a class="nav-link {% if request.path == '/documentos' %} active{% endif %}" href="{% url 'Documentos' %}">Documentos</a></li>
+                    <li class="nav-item"><a class="nav-link {% if request.path == '/donaciones' %} active{% endif %}"
+                            href="{% url 'Donaciones' %}">Donaciones</a></li>
+                    <li class="nav-item"><a class="nav-link {% if request.path == '/consultas' %} active{% endif %}"
+                            href="{% url 'Consultas' %}">Consultas</a></li>
+                    <li class="nav-item"><a class="nav-link {% if request.path == '/documentos' %} active{% endif %}"
+                            href="{% url 'Documentos' %}">Documentos</a></li>
                 </ul>
             </div>
         </div>
